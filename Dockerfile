@@ -1,36 +1,39 @@
 # ----------- Build Stage -----------
-FROM node:20.17.0-alpine AS build
+FROM node:24-alpine3.21 AS build
 
 WORKDIR /app
 
-# Install dependencies (better caching)
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production
+# Install deps (including devDependencies for build)
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN yarn install --frozen-lockfile
 
-# Copy source (excluding unnecessary files via .dockerignore)
+# Copy source
 COPY . .
+
+ARG VITE_BACKEND_URL=http://localhost:5000
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 
 # Build Vite project and remove source maps
 RUN yarn build && find /app/dist -name "*.map" -delete
 
 # ----------- Serve Stage -----------
-FROM nginx:1.27.2-alpine AS serve
+FROM nginx:1.29.1-alpine AS serve
+
+# Remove default html
+RUN rm -rf /usr/share/nginx/html/*
 
 # Copy built frontend from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy custom Nginx configuration
+# Copy your custom nginx.conf (SPA + gzip + security headers + proxy)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Run as non-root user
+# Run as non-root (nginx user exists by default)
 USER nginx
 
-# Expose port
 EXPOSE 80
 
-# Healthcheck
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
 
-# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

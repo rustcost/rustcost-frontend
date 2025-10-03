@@ -1,7 +1,15 @@
+# Ignore dependencies and build artifacts
+
 node_modules
+dist
+
+# Ignore VCS
+
 .git
 .gitignore
-*.md
-tests
-src
-vite.config.js
+
+# Ignore editor / system files
+
+.vscode
+.idea
+.DS_Store

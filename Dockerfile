@@ -28,6 +28,10 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copy your custom nginx.conf (SPA + gzip + security headers + proxy)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Pre-create cache dirs and set ownership for nginx user
+RUN mkdir -p /var/cache/nginx /var/run /var/log/nginx \
+    && chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx
+
 # Run as non-root (nginx user exists by default)
 USER nginx
 

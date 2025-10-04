@@ -32,6 +32,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 RUN mkdir -p /var/cache/nginx /var/run /var/log/nginx \
     && chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx
 
+RUN mkdir -p /var/run/nginx \
+    && chown -R nginx:nginx /var/run/nginx
+
 # Run as non-root (nginx user exists by default)
 USER nginx
 

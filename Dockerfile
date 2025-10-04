@@ -35,9 +35,10 @@ RUN mkdir -p /var/cache/nginx /var/run /var/log/nginx \
 # Run as non-root (nginx user exists by default)
 USER nginx
 
-EXPOSE 80
+# Run nginx on unprivileged port
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

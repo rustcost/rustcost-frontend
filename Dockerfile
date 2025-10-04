@@ -7,7 +7,8 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-ARG VITE_BACKEND_URL=http://127.0.0.1:5000
+# Default to /api so frontend always hits its own Nginx proxy
+ARG VITE_BACKEND_URL=/api
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 
 RUN yarn build && find /app/dist -name "*.map" -delete
@@ -19,7 +20,6 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Fix permissions for non-root nginx
 RUN mkdir -p /var/cache/nginx /var/run /var/log/nginx /run \
     && chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx /run
 
